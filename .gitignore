@@ -1,7 +1,7 @@
 .env
 __pycache__/
 *.pyc
-faiss_index/
+faiss_index_store/
 .venv/
 venv/
 *.pdf

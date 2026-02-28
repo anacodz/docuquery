@@ -9,35 +9,33 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 
-def get_pdf_text(pdf_docs):
+# load environment variables
+load_dotenv()
+
+def extract_text_from_pdfs(pdf_list):
     text = ""
-    for pdf in pdf_docs:
-        try:
-            pdf_reader = PdfReader(pdf)
-            for page in pdf_reader.pages:
-                extracted = page.extract_text()
-                if extracted:
-                    text += extracted
-        except Exception as e:
-            st.error(f"Error reading file {pdf.name}: {e}")
+    for pdf in pdf_list:
+        reader = PdfReader(pdf)
+        for page in reader.pages:
+            extracted = page.extract_text()
+            if extracted:
+                text += extracted
     return text
 
-def get_text_chunks(text):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-    chunks = text_splitter.split_text(text)
-    return chunks
+def split_text_into_chunks(text):
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    return splitter.split_text(text)
 
-def get_vector_store(text_chunks):
-    # Uses HuggingFace all-MiniLM-L6-v2 which runs locally and is open-source
+def create_vector_db(chunks):
+    # using local embeddings to save costs
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
-    vector_store.save_local("faiss_index")
+    db = FAISS.from_texts(chunks, embedding=embeddings)
+    db.save_local("faiss_index_store")
 
-def get_conversational_chain():
-    prompt_template = """
-    You are an intelligent enterprise AI assistant designed to extract insights from technical documents.
-    Answer the question as detailed as possible from the provided context. If the answer is not in
-    the provided context, politely say, "The requested information is not available in the given document.", and do not hallucinate an answer.
+def setup_qa_chain():
+    template = """
+    Answer the user's question based on the provided document context.
+    If the answer isn't in the context, just say "I couldn't find this in the uploaded document." Don't make things up.
 
     Context:
     {context}
@@ -48,71 +46,64 @@ def get_conversational_chain():
     Answer:
     """
     
-    # We use Google's free Gemini tier (must supply API key via .env)
-    model = ChatGoogleGenerativeAI(model="gemini-1.5-pro", temperature=0.3)
-    prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
-    chain = load_qa_chain(model, chain_type="stuff", prompt=prompt)
-    return chain
+    llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro", temperature=0.2)
+    prompt = PromptTemplate(template=template, input_variables=["context", "question"])
+    return load_qa_chain(llm, chain_type="stuff", prompt=prompt)
 
-def user_input(user_question):
-    # In a production app, embeddings model should be loaded once globally
+def process_query(query):
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     
     try:
-        new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
-        docs = new_db.similarity_search(user_question, k=4)
+        db = FAISS.load_local("faiss_index_store", embeddings, allow_dangerous_deserialization=True)
+        relevant_docs = db.similarity_search(query, k=4)
 
-        chain = get_conversational_chain()
-        response = chain.invoke(
-            {"input_documents": docs, "question": user_question}
+        chain = setup_qa_chain()
+        res = chain.invoke(
+            {"input_documents": relevant_docs, "question": query}
         )
-        st.markdown("### Answer:")
-        st.write(response["output_text"])
+        st.write("### Answer:")
+        st.write(res["output_text"])
         
-        with st.expander("View Source Document Chunks"):
-            for i, doc in enumerate(docs):
-                st.write(f"**Chunk {i+1}**:")
+        with st.expander("Show references"):
+            for i, doc in enumerate(relevant_docs):
+                st.write(f"**Source {i+1}**:")
                 st.write(doc.page_content)
     except Exception as e:
-        st.error("An error occurred during response generation. Make sure your API key is correct.")
-        st.exception(e)
+        st.error(f"Something went wrong. Is the API key configured properly? Error: {str(e)}")
 
 def main():
-    st.set_page_config(page_title="Enterprise RAG Assistant", page_icon="📄", layout="wide")
-    st.title("Enterprise RAG Document AI Assistant 📄🤖")
-    st.markdown("This application uses **Retrieval-Augmented Generation (RAG)** to answer questions securely based on the PDFs you upload.")
+    st.set_page_config(page_title="DocuQuery | PDF Assistant", layout="wide")
+    st.title("DocuQuery")
+    st.markdown("A simple RAG tool I built to query information from large PDFs using LangChain and Gemini.")
 
-    load_dotenv()
     api_key = os.getenv("GOOGLE_API_KEY")
 
     with st.sidebar:
-        st.title("📁 Document Upload")
-        st.markdown("Upload PDFs to build the vector database.")
-        pdf_docs = st.file_uploader("Upload your PDF Files", accept_multiple_files=True)
+        st.header("Upload Documents")
+        uploaded_pdfs = st.file_uploader("Upload your PDFs here", accept_multiple_files=True)
         
-        if st.button("Submit & Process Docs"):
-            if not api_key or api_key == "your_api_key_here":
-                st.error("Please add your Google API Key to the .env file.")
-            elif not pdf_docs:
-                st.warning("Please upload at least one PDF file.")
+        if st.button("Process Documents"):
+            if not api_key:
+                st.error("Missing Google API Key in .env file.")
+            elif not uploaded_pdfs:
+                st.warning("Please upload a file first.")
             else:
-                with st.spinner("Parsing text & Generating Embeddings..."):
-                    raw_text = get_pdf_text(pdf_docs)
-                    text_chunks = get_text_chunks(raw_text)
-                    if not text_chunks:
-                        st.error("No extractable text found in these documents.")
+                with st.spinner("Extracting and processing text..."):
+                    raw_text = extract_text_from_pdfs(uploaded_pdfs)
+                    chunks = split_text_into_chunks(raw_text)
+                    if not chunks:
+                        st.error("No readable text found in the PDF.")
                     else:
-                        get_vector_store(text_chunks)
-                        st.success("Vector Database Built Successfully!")
+                        create_vector_db(chunks)
+                        st.success("Documents processed and database created!")
 
-    # Check if a vector DB exists locally to enable searching
-    if os.path.exists("faiss_index"):
+    if os.path.exists("faiss_index_store"):
         st.markdown("---")
-        user_question = st.text_input("Ask a question about the uploaded document(s):")
-        if user_question:
-            user_input(user_question)
+        query = st.text_input("What do you want to know about the documents?")
+        if query:
+            process_query(query)
     else:
-        st.info("👈 Please upload a document and process it from the sidebar to start asking questions.")
+        st.info("Upload and process some documents in the sidebar to get started.")
 
 if __name__ == "__main__":
     main()

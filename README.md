@@ -1,54 +1,49 @@
-# Enterprise RAG Document AI Assistant
+# DocuQuery
 
-An advanced Retrieval-Augmented Generation (RAG) web application that enables users to query complex PDF documents. Built using Python, Streamlit, Langchain, and Google GenAI. This project demonstrates core Data/ML Engineering concepts including vector embeddings, similarity search, and generative AI orchestration.
+A lightweight Retrieval-Augmented Generation (RAG) tool I built to query and extract information from PDF documents. It uses LangChain for orchestration, FAISS for local vector search, and Google's Gemini LLM to generate answers based on the document's context.
 
-## Features
-- **Document Ingestion:** Securely parse and extract text from uploaded PDF documents.
-- **Embedded Vector Database:** Leverages FAISS for fast similarity search using HuggingFace sentence transformer embeddings.
-- **Generative AI Responses:** Integrate Google's Gemini models for accurate and context-aware natural language responses based on the PDF content.
-- **Responsive UI:** Streamlit frontend for a seamless and intuitive user experience.
+## Why I built this
+I needed a way to quickly search through large technical PDFs and research papers without manually reading through hundreds of pages. Since I wanted to keep the vector embeddings local and free, I used HuggingFace Sentence Transformers instead of relying on paid embedding APIs.
 
 ## Tech Stack
-- **Frontend:** Streamlit
-- **Backend Infrastructure:** Python, LangChain, FAISS
-- **AI Models:** Google Gemini (LLM) & HuggingFace (Embeddings)
-- **Deployment Strategy:** AWS EC2 / Render / Local deployment
+- **Python & Streamlit** (Frontend)
+- **LangChain & FAISS** (RAG pipeline and Vector Database)
+- **HuggingFace Sentences Transformers** (`all-MiniLM-L6-v2` for local embeddings)
+- **Google GenAI** (Gemini 1.5 Pro for response generation)
 
-## Architecture Overview
-1. **User Uploads PDF:** The file is ingested and the text is parsed into chunks using a character-level text splitter.
-2. **Generating Embeddings:** Each text chunk is converted into semantic vector embeddings using open-source models (HuggingFace `all-MiniLM-L6-v2`).
-3. **Similarity Search (FAISS):** When a user asks a query, the query is also converted to an embedding. FAISS quickly finds the top-K most similar text chunks.
-4. **LLM Generation:** The context (retrieved chunks) and the user's query are passed to the Gemini LLM to synthesize a precise answer.
+## Setup Instructions
 
-## Local Setup
-
-1. **Clone the repository:**
+1. **Clone the repo:**
    ```bash
-   git clone https://github.com/<your-username>/rag-document-ai.git
-   cd rag-document-ai
+   git clone https://github.com/your-username/docuquery.git
+   cd docuquery
    ```
 
-2. **Create a virtual environment & Install dependencies:**
+2. **Create a virtual environment:**
    ```bash
    python -m venv venv
-   source venv/bin/activate # For Mac/Linux
-   # venv\Scripts\activate # For Windows
+   source venv/bin/activate
+   # (For Windows: venv\Scripts\activate)
+   ```
+
+3. **Install the required packages:**
+   ```bash
    pip install -r requirements.txt
    ```
 
-3. **Set up Environment Variables:**
-   - Copy the `.env.example` file to `.env`
-   - Add your Google API key to `.env` (Get it from [Google AI Studio](https://aistudio.google.com/))
-   ```bash
-   cp .env.example .env
+4. **Environment Variables:**
+   Create a `.env` file in the root directory and add your Google API key:
+   ```env
+   GOOGLE_API_KEY="your_api_key_here"
    ```
 
-4. **Run the application:**
+5. **Run it:**
    ```bash
    streamlit run app.py
    ```
 
-## Future Enhancements
-- Dockerizing the application for automated deployments.
-- Deploying the Streamlit frontend to AWS or Streamlit Cloud.
-- Expanding support for .docx, .txt, and image-based PDFs (OCR).
+## How it works
+1. **Document Parsing:** Extracts raw text from uploaded PDFs using `PyPDF2`.
+2. **Chunking & Embedding:** Splits the text into smaller chunks and generates vector embeddings using a local HuggingFace model.
+3. **Similarity Search:** When you ask a question, FAISS retrieves the most relevant text chunks based on semantic similarity.
+4. **LLM Generation:** The context and question are passed to the Gemini LLM, which generates a natural language answer based *only* on the provided documents.
