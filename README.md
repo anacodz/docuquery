@@ -1,21 +1,24 @@
-# DocuQuery
+# DocuQuery ✨
 
-A lightweight Retrieval-Augmented Generation (RAG) tool I built to query and extract information from PDF documents. It uses LangChain for orchestration, FAISS for local vector search, and Google's Gemini LLM to generate answers based on the document's context.
+A stylish, enterprise-grade Retrieval-Augmented Generation (RAG) tool I built to query, cross-reference, and extract information from multiple PDF documents simultaneously. It uses LangChain for orchestration, FAISS for local vector search, and Google's newest Gemini models to generate highly accurate answers based strictly on the document context.
 
-## Why I built this
-I needed a way to quickly search through large technical PDFs and research papers without manually reading through hundreds of pages. Since I wanted to keep the vector embeddings local and free, I used HuggingFace Sentence Transformers instead of relying on paid embedding APIs.
+## 🚀 Key Features
+- **Multi-Document Synthesis**: Upload multiple PDFs at once. The AI maintains source-truth metadata and can cross-reference differences between documents.
+- **Dynamic UI Theming**: Built-in sleek color palettes (Elegant Pink, Ocean Blue, Midnight Dark, Forest Green) that dynamically adjust the entire app's CSS.
+- **Local Embeddings**: Keeps processing cost-free and secure by generating vectors locally before querying the LLM.
+- **Graceful Error Handling**: Skips corrupted files non-destructively instead of crashing the pipeline.
 
-## Tech Stack
-- **Python & Streamlit** (Frontend)
-- **LangChain & FAISS** (RAG pipeline and Vector Database)
-- **HuggingFace Sentences Transformers** (`all-MiniLM-L6-v2` for local embeddings)
-- **Google GenAI** (Gemini 1.5 Pro for response generation)
+## 🛠️ Tech Stack
+- **Python & Streamlit** (Frontend & Dynamic Theming)
+- **LangChain & FAISS** (RAG orchestration and high-speed Vector Database)
+- **HuggingFace Sentences Transformers** (`all-MiniLM-L6-v2` for local mathematical embeddings)
+- **Google GenAI** (`gemini-flash-latest` for low-latency reasoning and response generation)
 
-## Setup Instructions
+## 💻 Setup Instructions
 
 1. **Clone the repo:**
    ```bash
-   git clone https://github.com/your-username/docuquery.git
+   git clone https://github.com/anacodz/docuquery.git
    cd docuquery
    ```
 
@@ -37,13 +40,13 @@ I needed a way to quickly search through large technical PDFs and research paper
    GOOGLE_API_KEY="your_api_key_here"
    ```
 
-5. **Run it:**
+5. **Run it Locally:**
    ```bash
    streamlit run app.py
    ```
 
-## How it works
-1. **Document Parsing:** Extracts raw text from uploaded PDFs using `PyPDF2`.
-2. **Chunking & Embedding:** Splits the text into smaller chunks and generates vector embeddings using a local HuggingFace model.
-3. **Similarity Search:** When you ask a question, FAISS retrieves the most relevant text chunks based on semantic similarity.
-4. **LLM Generation:** The context and question are passed to the Gemini LLM, which generates a natural language answer based *only* on the provided documents.
+## 🧠 How the Architecture works
+1. **Document Parsing & Metadata:** Extracts raw text from uploaded PDFs using `PyPDF2` and tags each chunk with its source filename.
+2. **Chunking & local Embedding:** Splits the text into small overlapped chunks and maps them into semantic vectors using HuggingFace.
+3. **Similarity Search:** When a user asks a complex question, FAISS retrieves the top 12 most mathematically relevant text chunks across all documents.
+4. **LLM Synthesis:** The deep context and question are passed to the Gemini LLM, which synthesizes a natural language answer and explicitly cites its source files.
