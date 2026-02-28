@@ -95,6 +95,7 @@ def main():
     st.set_page_config(page_title="DocuQuery | AI PDF Assistant", page_icon="🎀", layout="wide")
     
     # 🎨 Color Theme Selector in Sidebar
+    # left sidebar theme picker
     with st.sidebar:
         st.markdown("### 🎨 Choose a Theme")
         color_theme = st.selectbox("", ["Elegant Pink", "Ocean Blue", "Midnight Dark", "Forest Green"])
@@ -106,81 +107,118 @@ def main():
         btn_gradient = "linear-gradient(45deg, #ec4899 0%, #8b5cf6 100%)"
         accent = "#ec4899"
         sidebar_bg = "rgba(255, 255, 255, 0.6)"
+        input_bg = "white"
+        panel_bg = "rgba(255, 255, 255, 0.85)"
     elif color_theme == "Ocean Blue":
         bg_gradient = "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)"
         text_color = "#0c4a6e"
         btn_gradient = "linear-gradient(45deg, #0ea5e9 0%, #3b82f6 100%)"
         accent = "#0ea5e9"
         sidebar_bg = "rgba(255, 255, 255, 0.6)"
+        input_bg = "white"
+        panel_bg = "rgba(255, 255, 255, 0.85)"
     elif color_theme == "Midnight Dark":
         bg_gradient = "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
         text_color = "#f8fafc"
         btn_gradient = "linear-gradient(45deg, #6366f1 0%, #8b5cf6 100%)"
         accent = "#8b5cf6"
-        sidebar_bg = "rgba(15, 23, 42, 0.6)"
+        sidebar_bg = "rgba(15, 23, 42, 0.8)"
+        input_bg = "#1e293b"
+        panel_bg = "rgba(30, 41, 59, 0.85)"
     else: # Forest Green
         bg_gradient = "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)"
         text_color = "#14532d"
         btn_gradient = "linear-gradient(45deg, #22c55e 0%, #10b981 100%)"
         accent = "#22c55e"
         sidebar_bg = "rgba(255, 255, 255, 0.6)"
+        input_bg = "white"
+        panel_bg = "rgba(255, 255, 255, 0.85)"
 
     # Dynamic Custom CSS 
     st.markdown(f"""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
         
-        .main {{
-            background: {bg_gradient};
-            font-family: 'Poppins', sans-serif;
-            color: {text_color};
+        /* Force background gradient on Streamlit main container */
+        [data-testid="stAppViewContainer"], .stApp {{
+            background: {bg_gradient} !important;
         }}
         
-        h1, h2, h3, p {{
+        [data-testid="stHeader"] {{
+            background: transparent !important;
+        }}
+        
+        /* Global font and color replacements */
+        p, h1, h2, h3, h4, h5, h6, span, div, label, li {{
+            font-family: 'Poppins', sans-serif !important;
+        }}
+        
+        h1, h2, h3, p, label, .markdown-text-container, .stMarkdown {{
             color: {text_color} !important;
-            font-family: 'Poppins', sans-serif;
         }}
         
         /* Button Styling */
         .stButton>button {{
-            background: {btn_gradient};
+            background: {btn_gradient} !important;
             color: white !important;
-            border-radius: 30px;
-            border: none;
-            padding: 0.6rem 1.5rem;
-            font-weight: 600;
-            transition: all 0.4s ease;
-            width: 100%;
+            border-radius: 30px !important;
+            border: none !important;
+            padding: 0.6rem 1.5rem !important;
+            font-weight: 600 !important;
+            transition: all 0.4s ease !important;
+            width: 100% !important;
         }}
         .stButton>button:hover {{
-            transform: translateY(-3px) scale(1.02);
-            filter: brightness(1.1);
+            transform: translateY(-3px) scale(1.02) !important;
+            filter: brightness(1.1) !important;
         }}
         
         /* Success Message Container */
         .success-message {{
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px);
-            color: {text_color};
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            border-left: 6px solid {accent};
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            font-weight: 600;
+            background: {panel_bg} !important;
+            backdrop-filter: blur(10px) !important;
+            color: {text_color} !important;
+            padding: 1rem 1.5rem !important;
+            border-radius: 12px !important;
+            margin-bottom: 1rem !important;
+            border-left: 6px solid {accent} !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+            font-weight: 600 !important;
         }}
         
-        /* Input borders */
-        div[data-baseweb="input"] {{
+        /* Expander headers */
+        .streamlit-expanderHeader {{
+            background-color: transparent !important;
+            color: {text_color} !important;
+        }}
+        [data-testid="stExpander"] {{
+            background-color: {panel_bg} !important;
+            border-radius: 10px !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+        }}
+        
+        /* Input widget borders and backgrounds */
+        div[data-baseweb="input"], div[data-baseweb="select"] {{
             border-radius: 20px !important;
             border: 2px solid {accent} !important;
-            background-color: white !important;
+            background-color: {input_bg} !important;
+        }}
+        div[data-baseweb="input"] input, div[data-baseweb="select"] div {{
+            color: {text_color} !important;
+            background-color: transparent !important;
+        }}
+        
+        /* File Uploader area */
+        [data-testid="stFileUploadDropzone"] {{
+            background-color: {panel_bg} !important;
+            border: 2px dashed {accent} !important;
         }}
         
         /* Sidebar Styling */
         [data-testid="stSidebar"] {{
             background-color: {sidebar_bg} !important;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px) !important;
+            border-right: 1px solid rgba(255,255,255,0.1) !important;
         }}
     </style>
     """, unsafe_allow_html=True)
