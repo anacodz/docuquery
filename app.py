@@ -94,81 +94,94 @@ def process_query(query):
 def main():
     st.set_page_config(page_title="DocuQuery | AI PDF Assistant", page_icon="🎀", layout="wide")
     
-    # Custom CSS for an elegant, chic, and dashing UI
-    st.markdown("""
+    # 🎨 Color Theme Selector in Sidebar
+    with st.sidebar:
+        st.markdown("### 🎨 Choose a Theme")
+        color_theme = st.selectbox("", ["Elegant Pink", "Ocean Blue", "Midnight Dark", "Forest Green"])
+
+    # Define color mappings based on selection
+    if color_theme == "Elegant Pink":
+        bg_gradient = "linear-gradient(135deg, #fff0f5 0%, #f3e8ff 100%)"
+        text_color = "#4a044e"
+        btn_gradient = "linear-gradient(45deg, #ec4899 0%, #8b5cf6 100%)"
+        accent = "#ec4899"
+        sidebar_bg = "rgba(255, 255, 255, 0.6)"
+    elif color_theme == "Ocean Blue":
+        bg_gradient = "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)"
+        text_color = "#0c4a6e"
+        btn_gradient = "linear-gradient(45deg, #0ea5e9 0%, #3b82f6 100%)"
+        accent = "#0ea5e9"
+        sidebar_bg = "rgba(255, 255, 255, 0.6)"
+    elif color_theme == "Midnight Dark":
+        bg_gradient = "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
+        text_color = "#f8fafc"
+        btn_gradient = "linear-gradient(45deg, #6366f1 0%, #8b5cf6 100%)"
+        accent = "#8b5cf6"
+        sidebar_bg = "rgba(15, 23, 42, 0.6)"
+    else: # Forest Green
+        bg_gradient = "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)"
+        text_color = "#14532d"
+        btn_gradient = "linear-gradient(45deg, #22c55e 0%, #10b981 100%)"
+        accent = "#22c55e"
+        sidebar_bg = "rgba(255, 255, 255, 0.6)"
+
+    # Dynamic Custom CSS 
+    st.markdown(f"""
     <style>
-        /* Global Background and Fonts */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
         
-        .main {
-            background: linear-gradient(135deg, #fff0f5 0%, #f3e8ff 100%);
+        .main {{
+            background: {bg_gradient};
             font-family: 'Poppins', sans-serif;
-        }
+            color: {text_color};
+        }}
         
-        /* Typography */
-        h1, h2, h3 {
-            color: #4a044e;
+        h1, h2, h3, p {{
+            color: {text_color} !important;
             font-family: 'Poppins', sans-serif;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-        
-        .subtitle {
-            font-size: 1.3rem;
-            color: #701a75;
-            font-weight: 400;
-            margin-bottom: 2rem;
-        }
+        }}
         
         /* Button Styling */
-        .stButton>button {
-            background: linear-gradient(45deg, #ec4899 0%, #8b5cf6 100%);
+        .stButton>button {{
+            background: {btn_gradient};
             color: white !important;
             border-radius: 30px;
             border: none;
             padding: 0.6rem 1.5rem;
             font-weight: 600;
-            font-size: 1.1rem;
-            letter-spacing: 0.5px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 8px 15px rgba(236, 72, 153, 0.3);
+            transition: all 0.4s ease;
             width: 100%;
-        }
-        .stButton>button:hover {
+        }}
+        .stButton>button:hover {{
             transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 12px 20px rgba(139, 92, 246, 0.4);
-        }
+            filter: brightness(1.1);
+        }}
         
         /* Success Message Container */
-        .success-message {
-            background: rgba(253, 232, 243, 0.85);
+        .success-message {{
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(10px);
-            color: #be185d;
+            color: {text_color};
             padding: 1rem 1.5rem;
             border-radius: 12px;
             margin-bottom: 1rem;
-            border-left: 6px solid #ec4899;
-            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.1);
+            border-left: 6px solid {accent};
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             font-weight: 600;
-        }
+        }}
         
         /* Input borders */
-        div[data-baseweb="input"] {
+        div[data-baseweb="input"] {{
             border-radius: 20px !important;
-            border: 2px solid #fbcfe8 !important;
+            border: 2px solid {accent} !important;
             background-color: white !important;
-        }
-        div[data-baseweb="input"]:focus-within {
-            border-color: #ec4899 !important;
-            box-shadow: 0 0 0 1px #ec4899 !important;
-        }
-
+        }}
+        
         /* Sidebar Styling */
-        [data-testid="stSidebar"] {
-            background-color: rgba(255, 255, 255, 0.6);
+        [data-testid="stSidebar"] {{
+            background-color: {sidebar_bg} !important;
             backdrop-filter: blur(10px);
-            border-right: 1px solid #fce7f3;
-        }
+        }}
     </style>
     """, unsafe_allow_html=True)
 
