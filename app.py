@@ -86,7 +86,7 @@ def process_query(query):
         relevant_docs = db.similarity_search(query, k=12)
 
         chain = setup_qa_chain()
-        with st.chat_message("assistant"):
+        with st.chat_message("assistant", avatar="✨"):
             with st.spinner("🧠 Synthesizing answer from multiple sources..."):
                 res = chain.invoke(
                     {"input_documents": relevant_docs, "question": query, "chat_history": chat_history_str}
@@ -173,8 +173,13 @@ def main():
         }}
         
         /* Global font and color replacements */
-        p, h1, h2, h3, h4, h5, h6, span, label, li {{
+        p, h1, h2, h3, h4, h5, h6, label, li {{
             font-family: 'Poppins', sans-serif !important;
+        }}
+        
+        /* Override default chat message avatar SVGs */
+        [data-testid="stChatMessage"] .st-emotion-cache-1c7y2kd {{
+            display: none !important;
         }}
         
         h1, h2, h3, p, label, .markdown-text-container, .stMarkdown {{
@@ -288,7 +293,8 @@ def main():
         
         # Render historical chat messages
         for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
+            avatar_icon = "👤" if message["role"] == "user" else "✨"
+            with st.chat_message(message["role"], avatar=avatar_icon):
                 st.markdown(message["content"])
                 if message["role"] == "assistant" and "docs" in message:
                     with st.expander("📚 View Extracted Source Context"):
@@ -301,7 +307,7 @@ def main():
         # Capture a new query
         query = st.chat_input("Ask a complex question about your documents...")
         if query:
-            with st.chat_message("user"):
+            with st.chat_message("user", avatar="👤"):
                 st.markdown(query)
             process_query(query)
     else:
