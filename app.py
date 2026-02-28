@@ -159,6 +159,14 @@ def main():
         /* Force background gradient on Streamlit main container */
         .stApp {{
             background: {bg_gradient} !important;
+            background-size: 400% 400% !important;
+            animation: gradient-shift 15s ease infinite !important;
+        }}
+        
+        @keyframes gradient-shift {{
+            0% {{ background-position: 0% 50%; }}
+            50% {{ background-position: 100% 50%; }}
+            100% {{ background-position: 0% 50%; }}
         }}
         
         [data-testid="stHeader"] {{
@@ -180,6 +188,25 @@ def main():
         /* Override default chat message avatar SVGs */
         [data-testid="stChatMessage"] .st-emotion-cache-1c7y2kd {{
             display: none !important;
+        }}
+        
+        /* Floating logic for the logo image */
+        .floating-logo {{
+            animation: float 4s ease-in-out infinite;
+        }}
+        @keyframes float {{
+            0% {{ transform: translateY(0px); }}
+            50% {{ transform: translateY(-10px); }}
+            100% {{ transform: translateY(0px); }}
+        }}
+        
+        /* Pulsing indicator logic for title */
+        .pulsing-status {{
+            animation: pulse-glow 2.5s ease-in-out infinite alternate;
+        }}
+        @keyframes pulse-glow {{
+            0% {{ text-shadow: 0 0 5px {accent}, 0 0 10px {accent}; }}
+            100% {{ text-shadow: 0 0 15px {text_color}, 0 0 25px {text_color}; }}
         }}
         
         h1, h2, h3, p, label, .markdown-text-container, .stMarkdown {{
@@ -254,10 +281,10 @@ def main():
 
     col1, col2 = st.columns([1, 6])
     with col1:
-        # A chic, modern, elegant AI/brain spark icon
-        st.image("https://cdn-icons-png.flaticon.com/512/8652/8652695.png", width=95)
+        # A chic, modern, elegant AI/brain spark icon with a floating abstract CSS animation
+        st.markdown(f'<img src="https://cdn-icons-png.flaticon.com/512/8652/8652695.png" class="floating-logo" width="95">', unsafe_allow_html=True)
     with col2:
-        st.title("DocuQuery ✨")
+        st.markdown("<h1 class='pulsing-status'>DocuQuery ✨</h1>", unsafe_allow_html=True)
         st.markdown("<p class='subtitle'>Your Smart & Elegant <strong>AI Document Assistant</strong></p>", unsafe_allow_html=True)
 
     api_key = os.getenv("GOOGLE_API_KEY")
