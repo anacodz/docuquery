@@ -157,7 +157,7 @@ def main():
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
         
         /* Force background gradient on Streamlit main container */
-        [data-testid="stAppViewContainer"], .stApp {{
+        .stApp {{
             background: {bg_gradient} !important;
         }}
         
@@ -165,8 +165,15 @@ def main():
             background: transparent !important;
         }}
         
+        /* Fix Chat Input overlapping text when scrolling */
+        [data-testid="stBottomBlockContainer"], [data-testid="stBottom"] {{
+            background: {bg_gradient} !important;
+            border-top: 1px solid rgba(128, 128, 128, 0.2);
+            z-index: 9999 !important;
+        }}
+        
         /* Global font and color replacements */
-        p, h1, h2, h3, h4, h5, h6, span, div, label, li {{
+        p, h1, h2, h3, h4, h5, h6, span, label, li {{
             font-family: 'Poppins', sans-serif !important;
         }}
         
