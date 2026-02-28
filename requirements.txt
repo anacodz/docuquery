@@ -10,3 +10,4 @@ python-dotenv
 huggingface_hub
 sentence-transformers
 langchain-text-splitters
+langchain-classic
