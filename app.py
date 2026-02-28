@@ -12,30 +12,40 @@ from dotenv import load_dotenv
 # load environment variables
 load_dotenv()
 
-def extract_text_from_pdfs(pdf_list):
-    text = ""
+def extract_text_and_metadatas_from_pdfs(pdf_list):
+    text_chunks = []
+    metadatas = []
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    
     for pdf in pdf_list:
         reader = PdfReader(pdf)
+        pdf_text = ""
         for page in reader.pages:
             extracted = page.extract_text()
             if extracted:
-                text += extracted
-    return text
+                pdf_text += extracted + "\n"
+                
+        # Split text for this specific document
+        chunks = splitter.split_text(pdf_text)
+        text_chunks.extend(chunks)
+        # Tag each chunk with the name of the file it came from
+        metadatas.extend([{"source": pdf.name}] * len(chunks))
+        
+    return text_chunks, metadatas
 
-def split_text_into_chunks(text):
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-    return splitter.split_text(text)
-
-def create_vector_db(chunks):
+def create_vector_db(text_chunks, metadatas):
     # using local embeddings to save costs
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    db = FAISS.from_texts(chunks, embedding=embeddings)
+    # Store the actual file names alongside the vectors
+    db = FAISS.from_texts(text_chunks, embedding=embeddings, metadatas=metadatas)
     db.save_local("faiss_index_store")
 
 def setup_qa_chain():
     template = """
-    Answer the user's question based on the provided document context.
-    If the answer isn't in the context, just say "I couldn't find this in the uploaded document." Don't make things up.
+    You are an intelligent AI assistant analyzing multiple documents.
+    Answer the user's question based on the provided document context below. 
+    The context contains snippets from different source documents. If the user asks you to compare documents, clearly state the differences based on the provided text.
+    If the answer isn't in the context, just say "I couldn't find this in the uploaded documents." Don't make things up.
 
     Context:
     {context}
@@ -55,10 +65,11 @@ def process_query(query):
     
     try:
         db = FAISS.load_local("faiss_index_store", embeddings, allow_dangerous_deserialization=True)
-        relevant_docs = db.similarity_search(query, k=4)
+        # Fetch more context (12 chunks) so the AI has enough text to compare multiple documents
+        relevant_docs = db.similarity_search(query, k=12)
 
         chain = setup_qa_chain()
-        with st.spinner("🧠 Synthesizing answer..."):
+        with st.spinner("🧠 Synthesizing answer from multiple sources..."):
             res = chain.invoke(
                 {"input_documents": relevant_docs, "question": query}
             )
@@ -67,8 +78,9 @@ def process_query(query):
         st.info(res["output_text"])
         
         with st.expander("📚 View Extracted Source Context"):
-            for i, doc in enumerate(relevant_docs):
-                st.markdown(f"**Source {i+1}**:")
+            for i, doc in enumerate(relevant_docs[:8]): # Only show top 8 in UI to avoid clutter
+                source_file = doc.metadata.get('source', 'Unknown Document')
+                st.markdown(f"**Source: {source_file}**")
                 st.markdown(f"> *{doc.page_content}*")
                 st.divider()
     except Exception as e:
@@ -177,13 +189,12 @@ def main():
                 st.warning("📄 Please upload a document to begin.")
             else:
                 with st.spinner("Extracting text & building FAISS Vector Database..."):
-                    raw_text = extract_text_from_pdfs(uploaded_pdfs)
-                    chunks = split_text_into_chunks(raw_text)
-                    if not chunks:
-                        st.error("No readable text found in the PDF.")
+                    text_chunks, metadatas = extract_text_and_metadatas_from_pdfs(uploaded_pdfs)
+                    if not text_chunks:
+                        st.error("No readable text found in the PDFs.")
                     else:
-                        create_vector_db(chunks)
-                        st.success("✅ Database built! Ready for queries.")
+                        create_vector_db(text_chunks, metadatas)
+                        st.success("✅ Multi-document database built! Ready for cross-referencing queries.")
 
     st.markdown("---")
     
