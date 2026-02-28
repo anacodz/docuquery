@@ -157,11 +157,11 @@ def main():
 
     col1, col2 = st.columns([1, 6])
     with col1:
-        # A chic, visually dashing icon
-        st.image("https://cdn-icons-png.flaticon.com/512/9307/9307767.png", width=95)
+        # A chic, modern, elegant AI/brain spark icon
+        st.image("https://cdn-icons-png.flaticon.com/512/8652/8652695.png", width=95)
     with col2:
         st.title("DocuQuery ✨")
-        st.markdown("<p class='subtitle'>Your Smart & Elegant <strong>AI Document Assistant</strong> 💅</p>", unsafe_allow_html=True)
+        st.markdown("<p class='subtitle'>Your Smart & Elegant <strong>AI Document Assistant</strong></p>", unsafe_allow_html=True)
 
     api_key = os.getenv("GOOGLE_API_KEY")
 
@@ -174,7 +174,7 @@ def main():
             if not api_key:
                 st.error("🔑 Missing Google API Key in settings.")
             elif not uploaded_pdfs:
-                st.warning("📄 Please upload a file first darling.")
+                st.warning("📄 Please upload a document to begin.")
             else:
                 with st.spinner("Extracting text & building FAISS Vector Database..."):
                     raw_text = extract_text_from_pdfs(uploaded_pdfs)
