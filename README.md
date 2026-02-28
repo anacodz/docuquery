@@ -3,6 +3,7 @@
 A stylish, enterprise-grade Retrieval-Augmented Generation (RAG) tool I built to query, cross-reference, and extract information from multiple PDF documents simultaneously. It uses LangChain for orchestration, FAISS for local vector search, and Google's newest Gemini models to generate highly accurate answers based strictly on the document context.
 
 ## 🚀 Key Features
+- **100% Multilingual Support**: Capable of ingesting, understanding, and citing documents written in over 50+ languages simultaneously (Hindi, Spanish, French, etc.)
 - **Multi-Document Synthesis**: Upload multiple PDFs at once. The AI maintains source-truth metadata and can cross-reference differences between documents.
 - **Dynamic UI Theming**: Built-in sleek color palettes (Elegant Pink, Ocean Blue, Midnight Dark, Forest Green) that dynamically adjust the entire app's CSS.
 - **Local Embeddings**: Keeps processing cost-free and secure by generating vectors locally before querying the LLM.
@@ -11,7 +12,7 @@ A stylish, enterprise-grade Retrieval-Augmented Generation (RAG) tool I built to
 ## 🛠️ Tech Stack
 - **Python & Streamlit** (Frontend & Dynamic Theming)
 - **LangChain & FAISS** (RAG orchestration and high-speed Vector Database)
-- **HuggingFace Sentences Transformers** (`all-MiniLM-L6-v2` for local mathematical embeddings)
+- **HuggingFace Sentences Transformers** (`paraphrase-multilingual-MiniLM-L12-v2` for cross-lingual embeddings)
 - **Google GenAI** (`gemini-flash-latest` for low-latency reasoning and response generation)
 
 ## 💻 Setup Instructions

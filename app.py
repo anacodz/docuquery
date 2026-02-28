@@ -93,7 +93,7 @@ def extract_text_and_metadatas_from_pdfs(pdf_list):
 
 def create_vector_db(text_chunks, metadatas):
     # using local embeddings to save costs
-    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    embeddings = HuggingFaceEmbeddings(model_name="paraphrase-multilingual-MiniLM-L12-v2")
     # Store the actual file names alongside the vectors
     db = FAISS.from_texts(text_chunks, embedding=embeddings, metadatas=metadatas)
     db.save_local("faiss_index_store")
@@ -132,7 +132,7 @@ def process_query(query):
     st.session_state.messages.append({"role": "user", "content": query})
     save_message("user", query)
 
-    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    embeddings = HuggingFaceEmbeddings(model_name="paraphrase-multilingual-MiniLM-L12-v2")
     
     try:
         db = FAISS.load_local("faiss_index_store", embeddings, allow_dangerous_deserialization=True)
