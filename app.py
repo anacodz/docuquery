@@ -46,7 +46,7 @@ def setup_qa_chain():
     Answer:
     """
     
-    llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.2)
+    llm = ChatGoogleGenerativeAI(model="gemini-flash-latest", temperature=0.2)
     prompt = PromptTemplate(template=template, input_variables=["context", "question"])
     return load_qa_chain(llm, chain_type="stuff", prompt=prompt)
 
