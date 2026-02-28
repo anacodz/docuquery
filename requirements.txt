@@ -8,3 +8,4 @@ PyPDF2
 faiss-cpu
 python-dotenv
 huggingface_hub
+sentence-transformers
