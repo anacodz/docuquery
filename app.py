@@ -58,52 +58,110 @@ def process_query(query):
         relevant_docs = db.similarity_search(query, k=4)
 
         chain = setup_qa_chain()
-        res = chain.invoke(
-            {"input_documents": relevant_docs, "question": query}
-        )
-        st.write("### Answer:")
-        st.write(res["output_text"])
+        with st.spinner("🧠 Synthesizing answer..."):
+            res = chain.invoke(
+                {"input_documents": relevant_docs, "question": query}
+            )
         
-        with st.expander("Show references"):
+        st.markdown("<div class='success-message'>✨ <strong>Answer Generated!</strong></div>", unsafe_allow_html=True)
+        st.info(res["output_text"])
+        
+        with st.expander("📚 View Extracted Source Context"):
             for i, doc in enumerate(relevant_docs):
-                st.write(f"**Source {i+1}**:")
-                st.write(doc.page_content)
+                st.markdown(f"**Source {i+1}**:")
+                st.markdown(f"> *{doc.page_content}*")
+                st.divider()
     except Exception as e:
         st.error(f"Something went wrong. Is the API key configured properly? Error: {str(e)}")
 
 def main():
-    st.set_page_config(page_title="DocuQuery | PDF Assistant", layout="wide")
-    st.title("DocuQuery")
-    st.markdown("A simple RAG tool I built to query information from large PDFs using LangChain and Gemini.")
+    st.set_page_config(page_title="DocuQuery | AI PDF Assistant", page_icon="⚡", layout="wide")
+    
+    # Custom CSS for a beautiful, colorful UI
+    st.markdown("""
+    <style>
+        .main {
+            background-color: #f8fafc;
+        }
+        h1 {
+            color: #1e293b;
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            color: #475569;
+            margin-bottom: 2rem;
+        }
+        .stButton>button {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            color: white;
+            border-radius: 8px;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .stButton>button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+        .success-message {
+            background-color: #dcfce7;
+            color: #166534;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #22c55e;
+        }
+        .css-1d391kg {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns([1, 5])
+    with col1:
+        st.image("https://cdn-icons-png.flaticon.com/512/2916/2916315.png", width=100)
+    with col2:
+        st.title("DocuQuery ⚡")
+        st.markdown("<p class='subtitle'>The Lightning-Fast <strong>RAG Engine</strong> for your Enterprise PDFs.</p>", unsafe_allow_html=True)
 
     api_key = os.getenv("GOOGLE_API_KEY")
 
     with st.sidebar:
-        st.header("Upload Documents")
-        uploaded_pdfs = st.file_uploader("Upload your PDFs here", accept_multiple_files=True)
+        st.markdown("## 📁 Data Pipeline")
+        st.markdown("Upload files to generate embeddings.")
+        uploaded_pdfs = st.file_uploader("Drop PDFs here", accept_multiple_files=True)
         
-        if st.button("Process Documents"):
+        if st.button("🚀 Process & Embed Documents"):
             if not api_key:
-                st.error("Missing Google API Key in .env file.")
+                st.error("🔑 Missing Google API Key in settings.")
             elif not uploaded_pdfs:
-                st.warning("Please upload a file first.")
+                st.warning("📄 Please upload a file first.")
             else:
-                with st.spinner("Extracting and processing text..."):
+                with st.spinner("Extracting text & building FAISS Vector Database..."):
                     raw_text = extract_text_from_pdfs(uploaded_pdfs)
                     chunks = split_text_into_chunks(raw_text)
                     if not chunks:
                         st.error("No readable text found in the PDF.")
                     else:
                         create_vector_db(chunks)
-                        st.success("Documents processed and database created!")
+                        st.success("✅ Database built! Ready for queries.")
 
+    st.markdown("---")
+    
     if os.path.exists("faiss_index_store"):
-        st.markdown("---")
-        query = st.text_input("What do you want to know about the documents?")
+        st.markdown("### 🔍 Semantic Search")
+        query = st.chat_input("Ask a complex question about your documents...")
         if query:
+            st.markdown(f"**You asked:** *{query}*")
             process_query(query)
     else:
-        st.info("Upload and process some documents in the sidebar to get started.")
+        st.info("👈 Please start the pipeline by uploading a document in the sidebar.")
 
 if __name__ == "__main__":
     main()
