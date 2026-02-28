@@ -18,18 +18,23 @@ def extract_text_and_metadatas_from_pdfs(pdf_list):
     splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     
     for pdf in pdf_list:
-        reader = PdfReader(pdf)
         pdf_text = ""
-        for page in reader.pages:
-            extracted = page.extract_text()
-            if extracted:
-                pdf_text += extracted + "\n"
+        try:
+            reader = PdfReader(pdf)
+            for page in reader.pages:
+                extracted = page.extract_text()
+                if extracted:
+                    pdf_text += extracted + "\n"
+        except Exception as e:
+            st.warning(f"⚠️ Skipping '{pdf.name}' because it could not be read. Please make sure it is a valid PDF file.")
+            continue
                 
         # Split text for this specific document
-        chunks = splitter.split_text(pdf_text)
-        text_chunks.extend(chunks)
-        # Tag each chunk with the name of the file it came from
-        metadatas.extend([{"source": pdf.name}] * len(chunks))
+        if pdf_text.strip():
+            chunks = splitter.split_text(pdf_text)
+            text_chunks.extend(chunks)
+            # Tag each chunk with the name of the file it came from
+            metadatas.extend([{"source": pdf.name}] * len(chunks))
         
     return text_chunks, metadatas
 
@@ -180,7 +185,7 @@ def main():
     with st.sidebar:
         st.markdown("## 🎀 Drop Your Files")
         st.markdown("Upload PDFs to weave them into the AI.")
-        uploaded_pdfs = st.file_uploader("", accept_multiple_files=True)
+        uploaded_pdfs = st.file_uploader("", accept_multiple_files=True, type=["pdf"])
         
         if st.button("✨ Process Documents ✨"):
             if not api_key:
