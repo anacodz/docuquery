@@ -52,6 +52,9 @@ def setup_qa_chain():
     The context contains snippets from different source documents. If the user asks you to compare documents, clearly state the differences based on the provided text.
     If the answer isn't in the context, just say "I couldn't find this in the uploaded documents." Don't make things up.
 
+    Previous Conversation History:
+    {chat_history}
+
     Context:
     {context}
     
@@ -62,10 +65,19 @@ def setup_qa_chain():
     """
     
     llm = ChatGoogleGenerativeAI(model="gemini-flash-latest", temperature=0.2)
-    prompt = PromptTemplate(template=template, input_variables=["context", "question"])
+    prompt = PromptTemplate(template=template, input_variables=["context", "question", "chat_history"])
     return load_qa_chain(llm, chain_type="stuff", prompt=prompt)
 
 def process_query(query):
+    # Build history string BEFORE appending the new user query to context
+    chat_history_str = ""
+    for msg in st.session_state.messages[-4:]: # Only keep last 4 context items
+        role = "System" if msg["role"] == "assistant" else "User"
+        chat_history_str += f"{role}: {msg['content']}\n"
+
+    # Add user query to state so it renders correctly going forward
+    st.session_state.messages.append({"role": "user", "content": query})
+
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     
     try:
@@ -74,20 +86,25 @@ def process_query(query):
         relevant_docs = db.similarity_search(query, k=12)
 
         chain = setup_qa_chain()
-        with st.spinner("🧠 Synthesizing answer from multiple sources..."):
-            res = chain.invoke(
-                {"input_documents": relevant_docs, "question": query}
-            )
-        
-        st.markdown("<div class='success-message'>✨ <strong>Answer Generated!</strong></div>", unsafe_allow_html=True)
-        st.info(res["output_text"])
-        
-        with st.expander("📚 View Extracted Source Context"):
-            for i, doc in enumerate(relevant_docs[:8]): # Only show top 8 in UI to avoid clutter
-                source_file = doc.metadata.get('source', 'Unknown Document')
-                st.markdown(f"**Source: {source_file}**")
-                st.markdown(f"> *{doc.page_content}*")
-                st.divider()
+        with st.chat_message("assistant"):
+            with st.spinner("🧠 Synthesizing answer from multiple sources..."):
+                res = chain.invoke(
+                    {"input_documents": relevant_docs, "question": query, "chat_history": chat_history_str}
+                )
+            
+            answer = res["output_text"]
+            st.markdown(answer)
+            
+            with st.expander("📚 View Extracted Source Context"):
+                for i, doc in enumerate(relevant_docs[:8]): # Only show top 8 in UI to avoid clutter
+                    source_file = doc.metadata.get('source', 'Unknown Document')
+                    st.markdown(f"**Source: {source_file}**")
+                    st.markdown(f"> *{doc.page_content}*")
+                    st.divider()
+                    
+            # Save AI response to session state memory
+            st.session_state.messages.append({"role": "assistant", "content": answer, "docs": relevant_docs})
+            
     except Exception as e:
         st.error(f"Something went wrong. Is the API key configured properly? Error: {str(e)}")
 
@@ -250,15 +267,35 @@ def main():
                         st.error("No readable text found in the PDFs.")
                     else:
                         create_vector_db(text_chunks, metadatas)
+                        st.session_state.messages = [] # Clear memory for a completely new DB context!
                         st.success("✅ Multi-document database built! Ready for cross-referencing queries.")
 
     st.markdown("---")
     
+    # Initialize chat history memory
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    
     if os.path.exists("faiss_index_store"):
         st.markdown("### 💭 Let's chat about your document!")
+        
+        # Render historical chat messages
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+                if message["role"] == "assistant" and "docs" in message:
+                    with st.expander("📚 View Extracted Source Context"):
+                        for i, doc in enumerate(message["docs"][:8]):
+                            source_file = doc.metadata.get('source', 'Unknown Document')
+                            st.markdown(f"**Source: {source_file}**")
+                            st.markdown(f"> *{doc.page_content}*")
+                            st.divider()
+
+        # Capture a new query
         query = st.chat_input("Ask a complex question about your documents...")
         if query:
-            st.markdown(f"**You asked:** *{query}*")
+            with st.chat_message("user"):
+                st.markdown(query)
             process_query(query)
     else:
         st.info("👈 Please start the magic by uploading a document in the sidebar.")
