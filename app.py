@@ -1,5 +1,7 @@
 import streamlit as st
 import os
+import sqlite3
+import json
 from PyPDF2 import PdfReader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -11,6 +13,57 @@ from dotenv import load_dotenv
 
 # load environment variables
 load_dotenv()
+
+# --- DATABASE SETUP ---
+DB_NAME = "chat_history.db"
+
+def init_db():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS messages
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                  role TEXT, 
+                  content TEXT, 
+                  docs_json TEXT)''')
+    conn.commit()
+    conn.close()
+
+def load_chat_history():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute('SELECT role, content, docs_json FROM messages ORDER BY id ASC')
+    rows = c.fetchall()
+    conn.close()
+    
+    messages = []
+    for role, content, docs_json in rows:
+        msg = {"role": role, "content": content}
+        if docs_json:
+            msg["docs"] = json.loads(docs_json)
+        messages.append(msg)
+    return messages
+
+def save_message(role, content, docs=None):
+    docs_json = None
+    if docs:
+        docs_json = json.dumps([{"source": d.metadata.get("source", "Unknown"), "content": d.page_content} for d in docs])
+        
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute('INSERT INTO messages (role, content, docs_json) VALUES (?, ?, ?)', (role, content, docs_json))
+    conn.commit()
+    conn.close()
+
+def clear_db():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute('DELETE FROM messages')
+    conn.commit()
+    conn.close()
+    st.session_state.messages = []
+
+# Initialize database on app start
+init_db()
 
 def extract_text_and_metadatas_from_pdfs(pdf_list):
     text_chunks = []
@@ -71,12 +124,13 @@ def setup_qa_chain():
 def process_query(query):
     # Build history string BEFORE appending the new user query to context
     chat_history_str = ""
-    for msg in st.session_state.messages[-4:]: # Only keep last 4 context items
+    for msg in st.session_state.messages[-4:]: 
         role = "System" if msg["role"] == "assistant" else "User"
         chat_history_str += f"{role}: {msg['content']}\n"
 
-    # Add user query to state so it renders correctly going forward
+    # Add user query to state and Database
     st.session_state.messages.append({"role": "user", "content": query})
+    save_message("user", query)
 
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     
@@ -102,8 +156,9 @@ def process_query(query):
                     st.markdown(f"> *{doc.page_content}*")
                     st.divider()
                     
-            # Save AI response to session state memory
-            st.session_state.messages.append({"role": "assistant", "content": answer, "docs": relevant_docs})
+            # Save AI response to session state and SQLite Database
+            st.session_state.messages.append({"role": "assistant", "content": answer, "docs": [d.__dict__ for d in relevant_docs]})
+            save_message("assistant", answer, relevant_docs)
             
     except Exception as e:
         st.error(f"Something went wrong. Is the API key configured properly? Error: {str(e)}")
@@ -306,19 +361,25 @@ def main():
                         st.error("No readable text found in the PDFs.")
                     else:
                         create_vector_db(text_chunks, metadatas)
-                        st.session_state.messages = [] # Clear memory for a completely new DB context!
+                        clear_db() # Clear DB for a completely new DB context!
                         st.success("✅ Multi-document database built! Ready for cross-referencing queries.")
 
     st.markdown("---")
     
-    # Initialize chat history memory
+    # Initialize memory explicitly from the persistent SQLite DB
     if "messages" not in st.session_state:
-        st.session_state.messages = []
+        st.session_state.messages = load_chat_history()
     
     if os.path.exists("faiss_index_store"):
-        st.markdown("### 💭 Let's chat about your document!")
-        
-        # Render historical chat messages
+        col1, col2 = st.columns([5, 1])
+        with col1:
+            st.markdown("### 💭 Let's chat about your document!")
+        with col2:
+            if st.button("🗑️ Clear Chat", help="Delete permanently"):
+                clear_db()
+                st.rerun()
+                
+        # Render historical chat messages from DB
         for message in st.session_state.messages:
             avatar_icon = "👤" if message["role"] == "user" else "✨"
             with st.chat_message(message["role"], avatar=avatar_icon):
@@ -326,9 +387,10 @@ def main():
                 if message["role"] == "assistant" and "docs" in message:
                     with st.expander("📚 View Extracted Source Context"):
                         for i, doc in enumerate(message["docs"][:8]):
-                            source_file = doc.metadata.get('source', 'Unknown Document')
+                            source_file = doc.get("source", "Unknown Document") if isinstance(doc, dict) else doc.metadata.get('source', 'Unknown Document')
+                            doc_content = doc.get("content", "") if isinstance(doc, dict) else doc.page_content
                             st.markdown(f"**Source: {source_file}**")
-                            st.markdown(f"> *{doc.page_content}*")
+                            st.markdown(f"> *{doc_content}*")
                             st.divider()
 
         # Capture a new query
