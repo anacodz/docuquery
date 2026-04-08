@@ -425,24 +425,23 @@ def inject_css(t):
             backdrop-filter: blur(8px) !important;
             border: 2px dashed {t["card_border"]} !important;
             border-radius: 14px !important;
-            min-height: 80px !important;
-            padding: 1rem 0.75rem !important;
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            justify-content: center !important;
-            gap: 0.4rem !important;
+            padding: 1.2rem 1rem !important;
             transition: border-color 0.3s ease, background-color 0.3s ease !important;
         }}
         [data-testid="stFileUploadDropzone"]:hover {{
             border-color: {t["accent"]} !important;
             background-color: {t["accent_light"]} !important;
         }}
-        [data-testid="stFileUploadDropzone"] button {{
-            margin-top: 0.25rem !important;
+        /* Space out the internal elements so nothing overlaps */
+        [data-testid="stFileUploadDropzone"] > div {{
+            padding: 0.3rem 0 !important;
         }}
-        [data-testid="stFileUploadDropzone"] small {{
-            margin-top: 0.25rem !important;
+        [data-testid="stFileUploadDropzone"] span,
+        [data-testid="stFileUploadDropzone"] small,
+        [data-testid="stFileUploadDropzone"] button {{
+            display: block !important;
+            margin: 0.3rem auto !important;
+            text-align: center !important;
         }}
         
         /* ===== SIDEBAR ===== */
