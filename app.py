@@ -263,8 +263,11 @@ def inject_css(t):
         }}
         
         /* ===== TYPOGRAPHY ===== */
-        html, body, p, h1, h2, h3, h4, h5, h6, label, li, span, div, input, textarea, button {{
+        html, body, p, h1, h2, h3, h4, h5, h6, label, li, input, textarea, button {{
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+        }}
+        div {{
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }}
         
         h1, h2, h3, p, label, .markdown-text-container, .stMarkdown {{
