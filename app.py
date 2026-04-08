@@ -681,10 +681,8 @@ def main():
         color_theme = st.selectbox("Theme", ["Elegant Pink", "Ocean Blue", "Midnight Dark", "Forest Green"], label_visibility="collapsed")
         
         st.markdown("---")
-        st.markdown("## 📄 Documents")
-        st.markdown('<p style="font-size:0.85rem; opacity:0.7;">Upload PDFs to build your knowledge base.</p>', unsafe_allow_html=True)
         
-        uploaded_pdfs = st.file_uploader("Upload PDFs", accept_multiple_files=True, type=["pdf"], label_visibility="collapsed")
+        uploaded_pdfs = st.file_uploader("📄 Upload Documents", accept_multiple_files=True, type=["pdf"])
         
         if uploaded_pdfs:
             badge_html = f'<span class="sidebar-badge">📎 {len(uploaded_pdfs)} file{"s" if len(uploaded_pdfs) != 1 else ""} selected</span>'
