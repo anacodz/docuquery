@@ -438,40 +438,6 @@ def inject_css(t):
             display: none !important;
         }}
         
-        /* Ensure the wrapper uses flex properly to prevent overlap */
-        [data-testid="stFileUploadDropzone"] > div {{
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            gap: 12px !important;
-        }}
-
-        /* Style the internal button */
-        [data-testid="stFileUploadDropzone"] button {{
-            background: {t["accent_light"]} !important;
-            color: {t["accent"]} !important;
-            border: 1.5px solid {t["accent"]} !important;
-            border-radius: 10px !important;
-            padding: 0.5rem 1rem !important;
-            font-weight: 600 !important;
-            font-size: 0.85rem !important;
-            width: 100% !important;
-            cursor: pointer !important;
-            transition: all 0.3s ease !important;
-        }}
-        [data-testid="stFileUploadDropzone"] button:hover {{
-            background: {t["accent"]} !important;
-            color: white !important;
-        }}
-        
-        /* File size limit text */
-        [data-testid="stFileUploadDropzone"] small {{
-            font-size: 0.75rem !important;
-            opacity: 0.6 !important;
-            color: {t["text_color"]} !important;
-            text-align: center !important;
-        }}
-        
         /* ===== SIDEBAR ===== */
         [data-testid="stSidebar"] {{
             background-color: {t["sidebar_bg"]} !important;
