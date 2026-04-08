@@ -600,29 +600,31 @@ def inject_css(t):
 def render_welcome(t):
     """Render an animated welcome/empty state with feature highlights."""
     st.markdown(f"""
-    <div class="welcome-hero">
-        <div class="welcome-icon">📄</div>
-        <div class="welcome-title">Welcome to DocuQuery</div>
-        <p class="welcome-desc">
-            Upload your PDF documents and start asking questions. 
-            The AI reads, understands, and cross-references your files 
-            to give you precise, source-cited answers.
-        </p>
-        <div class="feature-grid">
-            <div class="feature-card">
-                <div class="feat-icon">🌍</div>
-                <div class="feat-title">50+ Languages</div>
-                <div class="feat-desc">Multilingual embeddings understand documents in any language</div>
-            </div>
-            <div class="feature-card">
-                <div class="feat-icon">📑</div>
-                <div class="feat-title">Multi-Document</div>
-                <div class="feat-desc">Upload multiple PDFs and cross-reference across all of them</div>
-            </div>
-            <div class="feature-card">
-                <div class="feat-icon">🔒</div>
-                <div class="feat-title">Local Processing</div>
-                <div class="feat-desc">Embeddings generated locally — your data stays private</div>
+    <div style="display:flex; justify-content:center; align-items:center; width:100%;">
+        <div class="welcome-hero">
+            <div class="welcome-icon">📄</div>
+            <div class="welcome-title">Welcome to DocuQuery</div>
+            <p class="welcome-desc">
+                Upload your PDF documents and start asking questions. 
+                The AI reads, understands, and cross-references your files 
+                to give you precise, source-cited answers.
+            </p>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feat-icon">🌍</div>
+                    <div class="feat-title">50+ Languages</div>
+                    <div class="feat-desc">Multilingual embeddings understand documents in any language</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feat-icon">📑</div>
+                    <div class="feat-title">Multi-Document</div>
+                    <div class="feat-desc">Upload multiple PDFs and cross-reference across all of them</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feat-icon">🔒</div>
+                    <div class="feat-title">Local Processing</div>
+                    <div class="feat-desc">Embeddings generated locally — your data stays private</div>
+                </div>
             </div>
         </div>
     </div>
@@ -675,14 +677,39 @@ def render_sidebar(t):
 def main():
     st.set_page_config(page_title="DocuQuery | AI PDF Assistant", page_icon="📄", layout="wide")
     
-    # ── Sidebar (rendered first to get theme choice) ──
-    # We need a two-pass approach: first render sidebar to get theme, then inject CSS.
-    # Streamlit re-runs the whole script on interaction, so order matters.
-    
-    # Initial sidebar render for theme selection
+    # ── Sidebar (single block to avoid duplicate widgets) ──
     with st.sidebar:
         st.markdown('<div class="sidebar-section">Appearance</div>', unsafe_allow_html=True)
         color_theme = st.selectbox("Theme", ["Elegant Pink", "Ocean Blue", "Midnight Dark", "Forest Green"], label_visibility="collapsed")
+        
+        st.markdown("---")
+        st.markdown("## 📄 Documents")
+        st.markdown('<p style="font-size:0.85rem; opacity:0.7;">Upload PDFs to build your knowledge base.</p>', unsafe_allow_html=True)
+        
+        uploaded_pdfs = st.file_uploader("Upload PDFs", accept_multiple_files=True, type=["pdf"], label_visibility="collapsed")
+        
+        if uploaded_pdfs:
+            badge_html = f'<span class="sidebar-badge">📎 {len(uploaded_pdfs)} file{"s" if len(uploaded_pdfs) != 1 else ""} selected</span>'
+            st.markdown(badge_html, unsafe_allow_html=True)
+        
+        process_clicked = st.button("⚡ Process Documents")
+        
+        # Show stats if available
+        if "doc_stats" in st.session_state and st.session_state.doc_stats:
+            stats = st.session_state.doc_stats
+            st.markdown("---")
+            st.markdown('<div class="sidebar-section">Knowledge Base</div>', unsafe_allow_html=True)
+            stats_html = (
+                f'<span class="sidebar-badge">📄 {stats["docs"]} doc{"s" if stats["docs"] != 1 else ""}</span>'
+                f'<span class="sidebar-badge">🧩 {stats["chunks"]} chunks</span>'
+            )
+            st.markdown(stats_html, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        st.markdown(
+            '<div class="powered-by">BUILT WITH LANGCHAIN · FAISS · GEMINI</div>',
+            unsafe_allow_html=True
+        )
     
     # Get theme and inject CSS immediately
     t = get_theme(color_theme)
@@ -701,53 +728,25 @@ def main():
     
     api_key = os.getenv("GOOGLE_API_KEY")
     
-    # ── Sidebar content (continued) ──
-    with st.sidebar:
-        st.markdown("---")
-        st.markdown("## 📄 Documents")
-        st.markdown('<p style="font-size:0.85rem; opacity:0.7;">Upload PDFs to build your knowledge base.</p>', unsafe_allow_html=True)
-        
-        uploaded_pdfs = st.file_uploader("Upload PDFs", accept_multiple_files=True, type=["pdf"], label_visibility="collapsed")
-        
-        if uploaded_pdfs:
-            badge_html = f'<span class="sidebar-badge">📎 {len(uploaded_pdfs)} file{"s" if len(uploaded_pdfs) != 1 else ""} selected</span>'
-            st.markdown(badge_html, unsafe_allow_html=True)
-        
-        if st.button("⚡ Process Documents"):
-            if not api_key:
-                st.error("🔑 Missing Google API Key in settings.")
-            elif not uploaded_pdfs:
-                st.warning("📄 Please upload at least one document.")
-            else:
-                with st.spinner("Extracting text & building vector database..."):
-                    text_chunks, metadatas = extract_text_and_metadatas_from_pdfs(uploaded_pdfs)
-                    if not text_chunks:
-                        st.error("No readable text found in the PDFs.")
-                    else:
-                        create_vector_db(text_chunks, metadatas)
-                        clear_db()  # Clear DB for a completely new context
-                        st.session_state.doc_stats = {
-                            "docs": len(uploaded_pdfs),
-                            "chunks": len(text_chunks),
-                        }
-                        st.success(f"✅ Knowledge base built — {len(text_chunks)} chunks from {len(uploaded_pdfs)} document{'s' if len(uploaded_pdfs) != 1 else ''}. Ready to query!")
-        
-        # Show stats if available
-        if "doc_stats" in st.session_state and st.session_state.doc_stats:
-            stats = st.session_state.doc_stats
-            st.markdown("---")
-            st.markdown('<div class="sidebar-section">Knowledge Base</div>', unsafe_allow_html=True)
-            stats_html = (
-                f'<span class="sidebar-badge">📄 {stats["docs"]} doc{"s" if stats["docs"] != 1 else ""}</span>'
-                f'<span class="sidebar-badge">🧩 {stats["chunks"]} chunks</span>'
-            )
-            st.markdown(stats_html, unsafe_allow_html=True)
-        
-        st.markdown("---")
-        st.markdown(
-            '<div class="powered-by">BUILT WITH LANGCHAIN · FAISS · GEMINI</div>',
-            unsafe_allow_html=True
-        )
+    # ── Handle document processing ──
+    if process_clicked:
+        if not api_key:
+            st.error("🔑 Missing Google API Key in settings.")
+        elif not uploaded_pdfs:
+            st.warning("📄 Please upload at least one document.")
+        else:
+            with st.spinner("Extracting text & building vector database..."):
+                text_chunks, metadatas = extract_text_and_metadatas_from_pdfs(uploaded_pdfs)
+                if not text_chunks:
+                    st.error("No readable text found in the PDFs.")
+                else:
+                    create_vector_db(text_chunks, metadatas)
+                    clear_db()  # Clear DB for a completely new context
+                    st.session_state.doc_stats = {
+                        "docs": len(uploaded_pdfs),
+                        "chunks": len(text_chunks),
+                    }
+                    st.success(f"✅ Knowledge base built — {len(text_chunks)} chunks from {len(uploaded_pdfs)} document{'s' if len(uploaded_pdfs) != 1 else ''}. Ready to query!")
 
     st.markdown("---")
     
