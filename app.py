@@ -419,24 +419,6 @@ def inject_css(t):
             background-color: transparent !important;
         }}
         
-        /* ===== FILE UPLOADER (Cleaned) ===== */
-        [data-testid="stFileUploadDropzone"] {{
-            background-color: {t["panel_bg"]} !important;
-            backdrop-filter: blur(8px) !important;
-            border: 2px dashed {t["card_border"]} !important;
-            border-radius: 14px !important;
-            padding: 1.5rem 1rem !important;
-            transition: border-color 0.3s ease, background-color 0.3s ease !important;
-        }}
-        [data-testid="stFileUploadDropzone"]:hover {{
-            border-color: {t["accent"]} !important;
-            background-color: {t["accent_light"]} !important;
-        }}
-        
-        /* Hide the massive cloud icon to save space */
-        [data-testid="stFileUploadDropzone"] svg {{
-            display: none !important;
-        }}
         
         /* ===== SIDEBAR ===== */
         [data-testid="stSidebar"] {{
