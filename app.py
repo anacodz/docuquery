@@ -419,36 +419,40 @@ def inject_css(t):
             background-color: transparent !important;
         }}
         
-        /* ===== FILE UPLOADER (redesigned) ===== */
-        /* Hide the "Drag and drop file here" text to prevent overlap */
-        [data-testid="stFileUploadDropzone"] > div:first-child > div {{
-            visibility: hidden !important;
-            height: 0 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            overflow: hidden !important;
-        }}
-        /* Style the dropzone as a clean compact card */
+        /* ===== FILE UPLOADER (Cleaned) ===== */
         [data-testid="stFileUploadDropzone"] {{
             background-color: {t["panel_bg"]} !important;
             backdrop-filter: blur(8px) !important;
             border: 2px dashed {t["card_border"]} !important;
             border-radius: 14px !important;
-            padding: 1rem !important;
+            padding: 1.5rem 1rem !important;
             transition: border-color 0.3s ease, background-color 0.3s ease !important;
-            cursor: pointer !important;
         }}
         [data-testid="stFileUploadDropzone"]:hover {{
             border-color: {t["accent"]} !important;
             background-color: {t["accent_light"]} !important;
         }}
-        /* Style the Browse button inside the dropzone */
+        
+        /* Hide the massive cloud icon to save space */
+        [data-testid="stFileUploadDropzone"] svg {{
+            display: none !important;
+        }}
+        
+        /* Ensure the wrapper uses flex properly to prevent overlap */
+        [data-testid="stFileUploadDropzone"] > div {{
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 12px !important;
+        }}
+
+        /* Style the internal button */
         [data-testid="stFileUploadDropzone"] button {{
             background: {t["accent_light"]} !important;
             color: {t["accent"]} !important;
             border: 1.5px solid {t["accent"]} !important;
             border-radius: 10px !important;
-            padding: 0.5rem 1.2rem !important;
+            padding: 0.5rem 1rem !important;
             font-weight: 600 !important;
             font-size: 0.85rem !important;
             width: 100% !important;
@@ -459,14 +463,13 @@ def inject_css(t):
             background: {t["accent"]} !important;
             color: white !important;
         }}
+        
         /* File size limit text */
         [data-testid="stFileUploadDropzone"] small {{
-            display: block !important;
-            text-align: center !important;
-            margin-top: 0.5rem !important;
-            font-size: 0.7rem !important;
+            font-size: 0.75rem !important;
             opacity: 0.6 !important;
             color: {t["text_color"]} !important;
+            text-align: center !important;
         }}
         
         /* ===== SIDEBAR ===== */
