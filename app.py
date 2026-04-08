@@ -331,6 +331,15 @@ def inject_css(t):
             100% {{ transform: translateY(0px) rotate(0deg); }}
         }}
         
+        /* ===== CENTERED HEADER ===== */
+        .app-header {{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.2rem;
+            padding: 1.5rem 0 0.5rem 0;
+        }}
+        
         .app-title {{
             font-size: 2.6rem !important;
             font-weight: 800 !important;
@@ -340,16 +349,17 @@ def inject_css(t):
             -webkit-text-fill-color: transparent !important;
             background-clip: text !important;
             line-height: 1.2 !important;
-            margin-bottom: 0 !important;
-            padding-bottom: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }}
         
         .app-subtitle {{
             font-size: 1.05rem !important;
             font-weight: 400 !important;
             color: {t["text_secondary"]} !important;
-            margin-top: 0 !important;
-            padding-top: 0 !important;
+            text-align: center !important;
+            margin: 0.25rem 0 0 0 !important;
+            padding: 0 !important;
             opacity: 0.85;
         }}
         
@@ -415,11 +425,24 @@ def inject_css(t):
             backdrop-filter: blur(8px) !important;
             border: 2px dashed {t["card_border"]} !important;
             border-radius: 14px !important;
+            min-height: 80px !important;
+            padding: 1rem 0.75rem !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 0.4rem !important;
             transition: border-color 0.3s ease, background-color 0.3s ease !important;
         }}
         [data-testid="stFileUploadDropzone"]:hover {{
             border-color: {t["accent"]} !important;
             background-color: {t["accent_light"]} !important;
+        }}
+        [data-testid="stFileUploadDropzone"] button {{
+            margin-top: 0.25rem !important;
+        }}
+        [data-testid="stFileUploadDropzone"] small {{
+            margin-top: 0.25rem !important;
         }}
         
         /* ===== SIDEBAR ===== */
@@ -715,16 +738,16 @@ def main():
     t = get_theme(color_theme)
     inject_css(t)
     
-    # ── Header ──
-    col1, col2 = st.columns([1, 8])
-    with col1:
-        st.markdown(
-            f'<img src="https://cdn-icons-png.flaticon.com/512/8652/8652695.png" class="floating-logo" width="80">',
-            unsafe_allow_html=True
-        )
-    with col2:
-        st.markdown('<h1 class="app-title">DocuQuery ✨</h1>', unsafe_allow_html=True)
-        st.markdown('<p class="app-subtitle">Your Smart & Elegant <strong>AI Document Assistant</strong></p>', unsafe_allow_html=True)
+    # ── Header (centered with HTML flexbox) ──
+    st.markdown(f"""
+    <div class="app-header">
+        <img src="https://cdn-icons-png.flaticon.com/512/8652/8652695.png" class="floating-logo" width="70">
+        <div>
+            <h1 class="app-title">DocuQuery ✨</h1>
+            <p class="app-subtitle">Your Smart & Elegant <strong>AI Document Assistant</strong></p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
     api_key = os.getenv("GOOGLE_API_KEY")
     
