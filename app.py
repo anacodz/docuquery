@@ -163,59 +163,93 @@ def process_query(query):
     except Exception as e:
         st.error(f"Something went wrong. Is the API key configured properly? Error: {str(e)}")
 
-def main():
-    st.set_page_config(page_title="DocuQuery | AI PDF Assistant", page_icon="🎀", layout="wide")
-    
-    # 🎨 Color Theme Selector in Sidebar
-    # left sidebar theme picker
-    with st.sidebar:
-        st.markdown("### 🎨 Choose a Theme")
-        color_theme = st.selectbox("", ["Elegant Pink", "Ocean Blue", "Midnight Dark", "Forest Green"])
 
-    # Define color mappings based on selection
-    if color_theme == "Elegant Pink":
-        bg_gradient = "linear-gradient(135deg, #fff0f5 0%, #f3e8ff 100%)"
-        text_color = "#4a044e"
-        btn_gradient = "linear-gradient(45deg, #ec4899 0%, #8b5cf6 100%)"
-        accent = "#ec4899"
-        sidebar_bg = "rgba(255, 255, 255, 0.6)"
-        input_bg = "white"
-        panel_bg = "rgba(255, 255, 255, 0.85)"
-    elif color_theme == "Ocean Blue":
-        bg_gradient = "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)"
-        text_color = "#0c4a6e"
-        btn_gradient = "linear-gradient(45deg, #0ea5e9 0%, #3b82f6 100%)"
-        accent = "#0ea5e9"
-        sidebar_bg = "rgba(255, 255, 255, 0.6)"
-        input_bg = "white"
-        panel_bg = "rgba(255, 255, 255, 0.85)"
-    elif color_theme == "Midnight Dark":
-        bg_gradient = "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
-        text_color = "#f8fafc"
-        btn_gradient = "linear-gradient(45deg, #6366f1 0%, #8b5cf6 100%)"
-        accent = "#8b5cf6"
-        sidebar_bg = "rgba(15, 23, 42, 0.8)"
-        input_bg = "#1e293b"
-        panel_bg = "rgba(30, 41, 59, 0.85)"
-    else: # Forest Green
-        bg_gradient = "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)"
-        text_color = "#14532d"
-        btn_gradient = "linear-gradient(45deg, #22c55e 0%, #10b981 100%)"
-        accent = "#22c55e"
-        sidebar_bg = "rgba(255, 255, 255, 0.6)"
-        input_bg = "white"
-        panel_bg = "rgba(255, 255, 255, 0.85)"
+def get_theme(color_theme):
+    """Returns a dict of theme variables for the selected color theme."""
+    themes = {
+        "Elegant Pink": {
+            "bg_gradient": "linear-gradient(135deg, #fff0f5 0%, #fce7f3 30%, #f3e8ff 100%)",
+            "text_color": "#4a044e",
+            "text_secondary": "#7c3aed",
+            "btn_gradient": "linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #8b5cf6 100%)",
+            "accent": "#ec4899",
+            "accent_light": "rgba(236, 72, 153, 0.12)",
+            "sidebar_bg": "rgba(255, 255, 255, 0.65)",
+            "input_bg": "rgba(255, 255, 255, 0.9)",
+            "panel_bg": "rgba(255, 255, 255, 0.75)",
+            "chat_user_bg": "rgba(236, 72, 153, 0.08)",
+            "chat_ai_bg": "rgba(139, 92, 246, 0.08)",
+            "card_border": "rgba(236, 72, 153, 0.2)",
+            "divider": "rgba(236, 72, 153, 0.15)",
+            "shadow": "rgba(236, 72, 153, 0.1)",
+        },
+        "Ocean Blue": {
+            "bg_gradient": "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 30%, #dbeafe 100%)",
+            "text_color": "#0c4a6e",
+            "text_secondary": "#0369a1",
+            "btn_gradient": "linear-gradient(135deg, #0ea5e9 0%, #3b82f6 50%, #6366f1 100%)",
+            "accent": "#0ea5e9",
+            "accent_light": "rgba(14, 165, 233, 0.12)",
+            "sidebar_bg": "rgba(255, 255, 255, 0.65)",
+            "input_bg": "rgba(255, 255, 255, 0.9)",
+            "panel_bg": "rgba(255, 255, 255, 0.75)",
+            "chat_user_bg": "rgba(14, 165, 233, 0.08)",
+            "chat_ai_bg": "rgba(59, 130, 246, 0.08)",
+            "card_border": "rgba(14, 165, 233, 0.2)",
+            "divider": "rgba(14, 165, 233, 0.15)",
+            "shadow": "rgba(14, 165, 233, 0.1)",
+        },
+        "Midnight Dark": {
+            "bg_gradient": "linear-gradient(135deg, #0f172a 0%, #1e1b4b 30%, #1e293b 100%)",
+            "text_color": "#f8fafc",
+            "text_secondary": "#a5b4fc",
+            "btn_gradient": "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%)",
+            "accent": "#8b5cf6",
+            "accent_light": "rgba(139, 92, 246, 0.15)",
+            "sidebar_bg": "rgba(15, 23, 42, 0.85)",
+            "input_bg": "rgba(30, 41, 59, 0.9)",
+            "panel_bg": "rgba(30, 41, 59, 0.75)",
+            "chat_user_bg": "rgba(99, 102, 241, 0.12)",
+            "chat_ai_bg": "rgba(139, 92, 246, 0.12)",
+            "card_border": "rgba(139, 92, 246, 0.25)",
+            "divider": "rgba(139, 92, 246, 0.2)",
+            "shadow": "rgba(0, 0, 0, 0.3)",
+        },
+        "Forest Green": {
+            "bg_gradient": "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 30%, #d1fae5 100%)",
+            "text_color": "#14532d",
+            "text_secondary": "#15803d",
+            "btn_gradient": "linear-gradient(135deg, #22c55e 0%, #10b981 50%, #059669 100%)",
+            "accent": "#22c55e",
+            "accent_light": "rgba(34, 197, 94, 0.12)",
+            "sidebar_bg": "rgba(255, 255, 255, 0.65)",
+            "input_bg": "rgba(255, 255, 255, 0.9)",
+            "panel_bg": "rgba(255, 255, 255, 0.75)",
+            "chat_user_bg": "rgba(34, 197, 94, 0.08)",
+            "chat_ai_bg": "rgba(16, 185, 129, 0.08)",
+            "card_border": "rgba(34, 197, 94, 0.2)",
+            "divider": "rgba(34, 197, 94, 0.15)",
+            "shadow": "rgba(34, 197, 94, 0.1)",
+        },
+    }
+    return themes.get(color_theme, themes["Elegant Pink"])
 
-    # Dynamic Custom CSS 
+
+def inject_css(t):
+    """Inject the full dynamic CSS using the theme dict `t`."""
     st.markdown(f"""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
-        /* Force background gradient on Streamlit main container */
+        /* ===== GLOBAL RESET & BASE ===== */
+        *, *::before, *::after {{
+            box-sizing: border-box;
+        }}
+        
         .stApp {{
-            background: {bg_gradient} !important;
+            background: {t["bg_gradient"]} !important;
             background-size: 400% 400% !important;
-            animation: gradient-shift 15s ease infinite !important;
+            animation: gradient-shift 20s ease infinite !important;
         }}
         
         @keyframes gradient-shift {{
@@ -228,154 +262,507 @@ def main():
             background: transparent !important;
         }}
         
-        /* Fix Chat Input overlapping text when scrolling */
-        [data-testid="stBottomBlockContainer"], [data-testid="stBottom"] {{
-            background: {bg_gradient} !important;
-            border-top: 1px solid rgba(128, 128, 128, 0.2);
-            z-index: 9999 !important;
+        /* ===== TYPOGRAPHY ===== */
+        html, body, p, h1, h2, h3, h4, h5, h6, label, li, span, div, input, textarea, button {{
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
         }}
         
-        /* Global font and color replacements */
-        p, h1, h2, h3, h4, h5, h6, label, li {{
-            font-family: 'Poppins', sans-serif !important;
+        h1, h2, h3, p, label, .markdown-text-container, .stMarkdown {{
+            color: {t["text_color"]} !important;
+        }}
+        
+        /* ===== CHAT INPUT BOTTOM BAR ===== */
+        [data-testid="stBottomBlockContainer"], [data-testid="stBottom"] {{
+            background: {t["bg_gradient"]} !important;
+            border-top: 1px solid {t["divider"]};
+            z-index: 9999 !important;
+            padding-top: 0.75rem !important;
+        }}
+        
+        [data-testid="stChatInput"] {{
+            border-radius: 16px !important;
+            overflow: hidden !important;
+        }}
+        
+        [data-testid="stChatInput"] textarea {{
+            font-size: 0.95rem !important;
+            padding: 0.85rem 1rem !important;
+        }}
+
+        /* ===== CHAT MESSAGE BUBBLES ===== */
+        [data-testid="stChatMessage"] {{
+            background: {t["panel_bg"]} !important;
+            backdrop-filter: blur(16px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+            border: 1px solid {t["card_border"]} !important;
+            border-radius: 16px !important;
+            padding: 1.1rem 1.3rem !important;
+            margin-bottom: 0.85rem !important;
+            box-shadow: 0 4px 24px {t["shadow"]}, 0 1px 3px rgba(0,0,0,0.04) !important;
+            animation: msgFadeIn 0.4s ease-out !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        }}
+        
+        [data-testid="stChatMessage"]:hover {{
+            transform: translateY(-1px) !important;
+            box-shadow: 0 8px 32px {t["shadow"]}, 0 2px 6px rgba(0,0,0,0.06) !important;
+        }}
+        
+        @keyframes msgFadeIn {{
+            from {{ opacity: 0; transform: translateY(12px); }}
+            to {{ opacity: 1; transform: translateY(0); }}
         }}
         
         /* Override default chat message avatar SVGs */
         [data-testid="stChatMessage"] .st-emotion-cache-1c7y2kd {{
             display: none !important;
         }}
-        
-        /* Floating logic for the logo image */
+
+        /* ===== FLOATING LOGO & PULSING TITLE ===== */
         .floating-logo {{
-            animation: float 4s ease-in-out infinite;
+            animation: float 5s ease-in-out infinite;
+            filter: drop-shadow(0 4px 12px {t["shadow"]});
         }}
         @keyframes float {{
-            0% {{ transform: translateY(0px); }}
-            50% {{ transform: translateY(-10px); }}
-            100% {{ transform: translateY(0px); }}
+            0% {{ transform: translateY(0px) rotate(0deg); }}
+            25% {{ transform: translateY(-6px) rotate(1deg); }}
+            50% {{ transform: translateY(-10px) rotate(0deg); }}
+            75% {{ transform: translateY(-6px) rotate(-1deg); }}
+            100% {{ transform: translateY(0px) rotate(0deg); }}
         }}
         
-        /* Pulsing indicator logic for title */
-        .pulsing-status {{
-            animation: pulse-glow 2.5s ease-in-out infinite alternate;
-        }}
-        @keyframes pulse-glow {{
-            0% {{ text-shadow: 0 0 5px {accent}, 0 0 10px {accent}; }}
-            100% {{ text-shadow: 0 0 15px {text_color}, 0 0 25px {text_color}; }}
+        .app-title {{
+            font-size: 2.6rem !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.03em !important;
+            background: {t["btn_gradient"]};
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            line-height: 1.2 !important;
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
         }}
         
-        h1, h2, h3, p, label, .markdown-text-container, .stMarkdown {{
-            color: {text_color} !important;
+        .app-subtitle {{
+            font-size: 1.05rem !important;
+            font-weight: 400 !important;
+            color: {t["text_secondary"]} !important;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+            opacity: 0.85;
         }}
         
-        /* Button Styling */
+        /* ===== BUTTONS ===== */
         .stButton>button {{
-            background: {btn_gradient} !important;
+            background: {t["btn_gradient"]} !important;
+            background-size: 200% 200% !important;
             color: white !important;
-            border-radius: 30px !important;
+            border-radius: 14px !important;
             border: none !important;
-            padding: 0.6rem 1.5rem !important;
+            padding: 0.65rem 1.5rem !important;
             font-weight: 600 !important;
-            transition: all 0.4s ease !important;
+            font-size: 0.9rem !important;
+            letter-spacing: 0.01em !important;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
             width: 100% !important;
+            box-shadow: 0 4px 14px {t["shadow"]} !important;
         }}
         .stButton>button:hover {{
-            transform: translateY(-3px) scale(1.02) !important;
-            filter: brightness(1.1) !important;
+            transform: translateY(-2px) scale(1.01) !important;
+            box-shadow: 0 8px 25px {t["shadow"]} !important;
+            background-position: right center !important;
+            filter: brightness(1.08) !important;
+        }}
+        .stButton>button:active {{
+            transform: translateY(0px) scale(0.99) !important;
         }}
         
-        /* Success Message Container */
-        .success-message {{
-            background: {panel_bg} !important;
-            backdrop-filter: blur(10px) !important;
-            color: {text_color} !important;
-            padding: 1rem 1.5rem !important;
+        /* ===== EXPANDER (Source Context) ===== */
+        .streamlit-expanderHeader {{
+            background-color: transparent !important;
+            color: {t["text_color"]} !important;
+            font-weight: 600 !important;
+            font-size: 0.85rem !important;
+        }}
+        [data-testid="stExpander"] {{
+            background-color: {t["panel_bg"]} !important;
+            backdrop-filter: blur(12px) !important;
             border-radius: 12px !important;
-            margin-bottom: 1rem !important;
-            border-left: 6px solid {accent} !important;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+            border: 1px solid {t["card_border"]} !important;
+            margin-top: 0.5rem !important;
+        }}
+        
+        /* ===== INPUTS & SELECTS ===== */
+        div[data-baseweb="input"], div[data-baseweb="select"] {{
+            border-radius: 12px !important;
+            border: 1.5px solid {t["card_border"]} !important;
+            background-color: {t["input_bg"]} !important;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+        }}
+        div[data-baseweb="input"]:focus-within, div[data-baseweb="select"]:focus-within {{
+            border-color: {t["accent"]} !important;
+            box-shadow: 0 0 0 3px {t["accent_light"]} !important;
+        }}
+        div[data-baseweb="input"] input, div[data-baseweb="select"] div {{
+            color: {t["text_color"]} !important;
+            background-color: transparent !important;
+        }}
+        
+        /* ===== FILE UPLOADER ===== */
+        [data-testid="stFileUploadDropzone"] {{
+            background-color: {t["panel_bg"]} !important;
+            backdrop-filter: blur(8px) !important;
+            border: 2px dashed {t["card_border"]} !important;
+            border-radius: 14px !important;
+            transition: border-color 0.3s ease, background-color 0.3s ease !important;
+        }}
+        [data-testid="stFileUploadDropzone"]:hover {{
+            border-color: {t["accent"]} !important;
+            background-color: {t["accent_light"]} !important;
+        }}
+        
+        /* ===== SIDEBAR ===== */
+        [data-testid="stSidebar"] {{
+            background-color: {t["sidebar_bg"]} !important;
+            backdrop-filter: blur(20px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+            border-right: 1px solid {t["card_border"]} !important;
+        }}
+        
+        [data-testid="stSidebar"] .stMarkdown h2 {{
+            font-size: 1.15rem !important;
+            font-weight: 700 !important;
+        }}
+        
+        [data-testid="stSidebar"] .stMarkdown h3 {{
+            font-size: 0.95rem !important;
             font-weight: 600 !important;
         }}
         
-        /* Expander headers */
-        .streamlit-expanderHeader {{
-            background-color: transparent !important;
-            color: {text_color} !important;
-        }}
-        [data-testid="stExpander"] {{
-            background-color: {panel_bg} !important;
-            border-radius: 10px !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
+        /* ===== DIVIDER ===== */
+        hr {{
+            border: none !important;
+            height: 1px !important;
+            background: {t["divider"]} !important;
+            margin: 1rem 0 !important;
         }}
         
-        /* Input widget borders and backgrounds */
-        div[data-baseweb="input"], div[data-baseweb="select"] {{
-            border-radius: 20px !important;
-            border: 2px solid {accent} !important;
-            background-color: {input_bg} !important;
+        /* ===== CUSTOM COMPONENTS ===== */
+        
+        /* Welcome hero section */
+        .welcome-hero {{
+            text-align: center;
+            padding: 3rem 1.5rem;
+            animation: heroFadeIn 0.8s ease-out;
         }}
-        div[data-baseweb="input"] input, div[data-baseweb="select"] div {{
-            color: {text_color} !important;
-            background-color: transparent !important;
+        @keyframes heroFadeIn {{
+            from {{ opacity: 0; transform: translateY(20px); }}
+            to {{ opacity: 1; transform: translateY(0); }}
         }}
         
-        /* File Uploader area */
-        [data-testid="stFileUploadDropzone"] {{
-            background-color: {panel_bg} !important;
-            border: 2px dashed {accent} !important;
+        .welcome-icon {{
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            animation: float 5s ease-in-out infinite;
         }}
         
-        /* Sidebar Styling */
-        [data-testid="stSidebar"] {{
-            background-color: {sidebar_bg} !important;
-            backdrop-filter: blur(10px) !important;
-            border-right: 1px solid rgba(255,255,255,0.1) !important;
+        .welcome-title {{
+            font-size: 1.8rem !important;
+            font-weight: 700 !important;
+            color: {t["text_color"]} !important;
+            margin-bottom: 0.5rem !important;
+        }}
+        
+        .welcome-desc {{
+            font-size: 1.05rem !important;
+            color: {t["text_secondary"]} !important;
+            max-width: 520px;
+            margin: 0 auto 2rem auto;
+            line-height: 1.6;
+        }}
+        
+        /* Feature cards */
+        .feature-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            max-width: 720px;
+            margin: 0 auto;
+        }}
+        
+        .feature-card {{
+            background: {t["panel_bg"]};
+            backdrop-filter: blur(12px);
+            border: 1px solid {t["card_border"]};
+            border-radius: 14px;
+            padding: 1.25rem 1rem;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }}
+        .feature-card:hover {{
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px {t["shadow"]};
+        }}
+        .feature-card .feat-icon {{
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }}
+        .feature-card .feat-title {{
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: {t["text_color"]};
+            margin-bottom: 0.25rem;
+        }}
+        .feature-card .feat-desc {{
+            font-size: 0.75rem;
+            color: {t["text_secondary"]};
+            line-height: 1.4;
+        }}
+        
+        /* Sidebar stat badges */
+        .sidebar-badge {{
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: {t["accent_light"]};
+            border: 1px solid {t["card_border"]};
+            border-radius: 20px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: {t["text_color"]};
+            margin-right: 0.4rem;
+            margin-bottom: 0.4rem;
+        }}
+        
+        /* Sidebar section label */
+        .sidebar-section {{
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: {t["text_secondary"]};
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+            opacity: 0.7;
+        }}
+        
+        /* Chat header bar */
+        .chat-header {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            margin-bottom: 0.25rem;
+        }}
+        
+        .chat-header-title {{
+            font-size: 1.1rem !important;
+            font-weight: 700 !important;
+            color: {t["text_color"]} !important;
+            margin: 0 !important;
+        }}
+        
+        /* Powered by footer */
+        .powered-by {{
+            text-align: center;
+            font-size: 0.65rem;
+            color: {t["text_secondary"]};
+            opacity: 0.5;
+            padding: 0.5rem 0 0 0;
+            letter-spacing: 0.05em;
+        }}
+        
+        /* Source context styling inside expanders */
+        .source-chip {{
+            display: inline-block;
+            background: {t["accent_light"]};
+            border: 1px solid {t["card_border"]};
+            border-radius: 8px;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: {t["accent"]};
+            margin-bottom: 0.4rem;
+        }}
+        
+        /* Streamlit toast/alert overrides */
+        [data-testid="stAlert"] {{
+            border-radius: 12px !important;
+            backdrop-filter: blur(8px) !important;
         }}
     </style>
     """, unsafe_allow_html=True)
 
-    col1, col2 = st.columns([1, 6])
-    with col1:
-        # A chic, modern, elegant AI/brain spark icon with a floating abstract CSS animation
-        st.markdown(f'<img src="https://cdn-icons-png.flaticon.com/512/8652/8652695.png" class="floating-logo" width="95">', unsafe_allow_html=True)
-    with col2:
-        st.markdown("<h1 class='pulsing-status'>DocuQuery ✨</h1>", unsafe_allow_html=True)
-        st.markdown("<p class='subtitle'>Your Smart & Elegant <strong>AI Document Assistant</strong></p>", unsafe_allow_html=True)
 
-    api_key = os.getenv("GOOGLE_API_KEY")
+def render_welcome(t):
+    """Render an animated welcome/empty state with feature highlights."""
+    st.markdown(f"""
+    <div class="welcome-hero">
+        <div class="welcome-icon">📄</div>
+        <div class="welcome-title">Welcome to DocuQuery</div>
+        <p class="welcome-desc">
+            Upload your PDF documents and start asking questions. 
+            The AI reads, understands, and cross-references your files 
+            to give you precise, source-cited answers.
+        </p>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feat-icon">🌍</div>
+                <div class="feat-title">50+ Languages</div>
+                <div class="feat-desc">Multilingual embeddings understand documents in any language</div>
+            </div>
+            <div class="feature-card">
+                <div class="feat-icon">📑</div>
+                <div class="feat-title">Multi-Document</div>
+                <div class="feat-desc">Upload multiple PDFs and cross-reference across all of them</div>
+            </div>
+            <div class="feature-card">
+                <div class="feat-icon">🔒</div>
+                <div class="feat-title">Local Processing</div>
+                <div class="feat-desc">Embeddings generated locally — your data stays private</div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
+
+def render_sidebar(t):
+    """Build the full sidebar UI. Returns (uploaded_pdfs, process_clicked)."""
     with st.sidebar:
-        st.markdown("## 🎀 Drop Your Files")
-        st.markdown("Upload PDFs to weave them into the AI.")
-        uploaded_pdfs = st.file_uploader("", accept_multiple_files=True, type=["pdf"])
+        # Theme selector
+        st.markdown('<div class="sidebar-section">Appearance</div>', unsafe_allow_html=True)
+        color_theme = st.selectbox("Theme", ["Elegant Pink", "Ocean Blue", "Midnight Dark", "Forest Green"], label_visibility="collapsed")
         
-        if st.button("✨ Process Documents ✨"):
+        st.markdown("---")
+        
+        # Document upload section
+        st.markdown("## 📄 Documents")
+        st.markdown('<p style="font-size:0.85rem; opacity:0.7;">Upload PDFs to build your knowledge base.</p>', unsafe_allow_html=True)
+        
+        uploaded_pdfs = st.file_uploader("Upload PDFs", accept_multiple_files=True, type=["pdf"], label_visibility="collapsed")
+        
+        # Show uploaded file count badge
+        if uploaded_pdfs:
+            badge_html = f'<span class="sidebar-badge">📎 {len(uploaded_pdfs)} file{"s" if len(uploaded_pdfs) != 1 else ""} selected</span>'
+            st.markdown(badge_html, unsafe_allow_html=True)
+        
+        process_clicked = st.button("⚡ Process Documents")
+        
+        # Show processing stats if available
+        if "doc_stats" in st.session_state and st.session_state.doc_stats:
+            stats = st.session_state.doc_stats
+            st.markdown("---")
+            st.markdown('<div class="sidebar-section">Knowledge Base</div>', unsafe_allow_html=True)
+            stats_html = (
+                f'<span class="sidebar-badge">📄 {stats["docs"]} doc{"s" if stats["docs"] != 1 else ""}</span>'
+                f'<span class="sidebar-badge">🧩 {stats["chunks"]} chunks</span>'
+            )
+            st.markdown(stats_html, unsafe_allow_html=True)
+        
+        # Footer
+        st.markdown("---")
+        st.markdown(
+            '<div class="powered-by">BUILT WITH LANGCHAIN · FAISS · GEMINI</div>',
+            unsafe_allow_html=True
+        )
+        
+    return color_theme, uploaded_pdfs, process_clicked
+
+
+def main():
+    st.set_page_config(page_title="DocuQuery | AI PDF Assistant", page_icon="📄", layout="wide")
+    
+    # ── Sidebar (rendered first to get theme choice) ──
+    # We need a two-pass approach: first render sidebar to get theme, then inject CSS.
+    # Streamlit re-runs the whole script on interaction, so order matters.
+    
+    # Initial sidebar render for theme selection
+    with st.sidebar:
+        st.markdown('<div class="sidebar-section">Appearance</div>', unsafe_allow_html=True)
+        color_theme = st.selectbox("Theme", ["Elegant Pink", "Ocean Blue", "Midnight Dark", "Forest Green"], label_visibility="collapsed")
+    
+    # Get theme and inject CSS immediately
+    t = get_theme(color_theme)
+    inject_css(t)
+    
+    # ── Header ──
+    col1, col2 = st.columns([1, 8])
+    with col1:
+        st.markdown(
+            f'<img src="https://cdn-icons-png.flaticon.com/512/8652/8652695.png" class="floating-logo" width="80">',
+            unsafe_allow_html=True
+        )
+    with col2:
+        st.markdown('<h1 class="app-title">DocuQuery ✨</h1>', unsafe_allow_html=True)
+        st.markdown('<p class="app-subtitle">Your Smart & Elegant <strong>AI Document Assistant</strong></p>', unsafe_allow_html=True)
+    
+    api_key = os.getenv("GOOGLE_API_KEY")
+    
+    # ── Sidebar content (continued) ──
+    with st.sidebar:
+        st.markdown("---")
+        st.markdown("## 📄 Documents")
+        st.markdown('<p style="font-size:0.85rem; opacity:0.7;">Upload PDFs to build your knowledge base.</p>', unsafe_allow_html=True)
+        
+        uploaded_pdfs = st.file_uploader("Upload PDFs", accept_multiple_files=True, type=["pdf"], label_visibility="collapsed")
+        
+        if uploaded_pdfs:
+            badge_html = f'<span class="sidebar-badge">📎 {len(uploaded_pdfs)} file{"s" if len(uploaded_pdfs) != 1 else ""} selected</span>'
+            st.markdown(badge_html, unsafe_allow_html=True)
+        
+        if st.button("⚡ Process Documents"):
             if not api_key:
                 st.error("🔑 Missing Google API Key in settings.")
             elif not uploaded_pdfs:
-                st.warning("📄 Please upload a document to begin.")
+                st.warning("📄 Please upload at least one document.")
             else:
-                with st.spinner("Extracting text & building FAISS Vector Database..."):
+                with st.spinner("Extracting text & building vector database..."):
                     text_chunks, metadatas = extract_text_and_metadatas_from_pdfs(uploaded_pdfs)
                     if not text_chunks:
                         st.error("No readable text found in the PDFs.")
                     else:
                         create_vector_db(text_chunks, metadatas)
-                        clear_db() # Clear DB for a completely new DB context!
-                        st.success("✅ Multi-document database built! Ready for cross-referencing queries.")
+                        clear_db()  # Clear DB for a completely new context
+                        st.session_state.doc_stats = {
+                            "docs": len(uploaded_pdfs),
+                            "chunks": len(text_chunks),
+                        }
+                        st.success(f"✅ Knowledge base built — {len(text_chunks)} chunks from {len(uploaded_pdfs)} document{'s' if len(uploaded_pdfs) != 1 else ''}. Ready to query!")
+        
+        # Show stats if available
+        if "doc_stats" in st.session_state and st.session_state.doc_stats:
+            stats = st.session_state.doc_stats
+            st.markdown("---")
+            st.markdown('<div class="sidebar-section">Knowledge Base</div>', unsafe_allow_html=True)
+            stats_html = (
+                f'<span class="sidebar-badge">📄 {stats["docs"]} doc{"s" if stats["docs"] != 1 else ""}</span>'
+                f'<span class="sidebar-badge">🧩 {stats["chunks"]} chunks</span>'
+            )
+            st.markdown(stats_html, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        st.markdown(
+            '<div class="powered-by">BUILT WITH LANGCHAIN · FAISS · GEMINI</div>',
+            unsafe_allow_html=True
+        )
 
     st.markdown("---")
     
-    # Initialize memory explicitly from the persistent SQLite DB
+    # ── Initialize memory from SQLite ──
     if "messages" not in st.session_state:
         st.session_state.messages = load_chat_history()
     
+    # ── Main content area ──
     if os.path.exists("faiss_index_store"):
+        # Chat header with clear button
         col1, col2 = st.columns([5, 1])
         with col1:
-            st.markdown("### 💭 Let's chat about your document!")
+            st.markdown("### 💭 Chat with your documents")
         with col2:
-            if st.button("🗑️ Clear Chat", help="Delete permanently"):
+            if st.button("🗑️ Clear", help="Clear conversation history"):
                 clear_db()
                 st.rerun()
                 
@@ -385,22 +772,22 @@ def main():
             with st.chat_message(message["role"], avatar=avatar_icon):
                 st.markdown(message["content"])
                 if message["role"] == "assistant" and "docs" in message:
-                    with st.expander("📚 View Extracted Source Context"):
+                    with st.expander("📚 View Source Context"):
                         for i, doc in enumerate(message["docs"][:8]):
                             source_file = doc.get("source", "Unknown Document") if isinstance(doc, dict) else doc.metadata.get('source', 'Unknown Document')
                             doc_content = doc.get("content", "") if isinstance(doc, dict) else doc.page_content
-                            st.markdown(f"**Source: {source_file}**")
+                            st.markdown(f'<span class="source-chip">📎 {source_file}</span>', unsafe_allow_html=True)
                             st.markdown(f"> *{doc_content}*")
                             st.divider()
 
         # Capture a new query
-        query = st.chat_input("Ask a complex question about your documents...")
+        query = st.chat_input("Ask anything about your documents...")
         if query:
             with st.chat_message("user", avatar="👤"):
                 st.markdown(query)
             process_query(query)
     else:
-        st.info("👈 Please start the magic by uploading a document in the sidebar.")
+        render_welcome(t)
 
 if __name__ == "__main__":
     main()
